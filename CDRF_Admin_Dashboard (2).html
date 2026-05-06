@@ -58,20 +58,6 @@ function adminUseDefaultProjectMaster(){
   if(status) status.textContent = 'Using embedded project master.';
 }
 
-
-function autoLoadProjectMaster(){
-  var url = 'https://script.google.com/macros/s/AKfycbxSCC4ij039KGvgSpt8Ap8f-6NB-3vDcXBqvC-x2Z4s98jOILkTOGqy9aSmFu8m2EH1Pg/exec';
-  fetch(url)
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      var rows = Array.isArray(data) ? data : (data.projects || data.rows || data.data || []);
-      if(rows && rows.length) loadProjectMaster(rows);
-    })
-    .catch(function(){
-      // silently fallback to embedded master
-    });
-}
-
 </script>
 <style>
 /* ═══════════════════════════════════════════════════════
@@ -1270,7 +1256,7 @@ button[onclick*="clear"] {
 .gas-copy-btn { position:absolute; top:10px; right:10px; background:#0fb8ad; color:#fff; border:none; padding:5px 12px; border-radius:5px; font-size:11px; font-weight:700; cursor:pointer; }
 
 /* ── Admin button in header ── */
-#btn-admin-login { display:none !important;
+#btn-admin-login {
   margin-left: auto;
   background: rgba(15,184,173,0.12);
   border: 1.5px solid rgba(15,184,173,0.4);
@@ -1568,7 +1554,7 @@ button[onclick*="submitForm"]:hover { background: #0d6e67 !important; }
 .report-back:hover { background: #0d1b35 !important; color: #fff !important; }
 
 /* ── Admin button ── */
-#btn-admin-login { display:none !important;
+#btn-admin-login {
   background: #e6faf8 !important;
   border: 2px solid #0fb8ad !important;
   color: #064e4a !important;
@@ -1604,7 +1590,26 @@ button[onclick*="submitForm"]:hover { background: #0d6e67 !important; }
 
 </style>
 </head>
+
+<div id="workflow-guide" style="max-width:1100px;margin:20px auto;background:#f0fdf9;border:2px solid #0fb8ad;border-radius:14px;padding:24px;">
+  <h2 style="margin:0 0 12px;color:#0d1b35">Integration Workflow — Step by Step</h2>
+  <ol style="color:#1e293b;line-height:2.2;font-size:14px;padding-left:20px">
+    <li><strong>Google Sheet:</strong> Open your Google Sheet → add a tab named <code>ProjectMaster</code> → use the column headers: <em>Application No., Project Title, PI 1 Name, PI 1 Department, PI 1 Campus, PI 2 Name, PI 2 Department, PI 2 Campus</em></li>
+    <li><strong>Apps Script deployed:</strong> ✅ Done — Web App URL is already embedded in this page:<br><code style="word-break:break-all;background:#e2e8f0;padding:4px 8px;border-radius:6px;font-size:12px">https://script.google.com/macros/s/AKfycbxSCC4ij039KGvgSpt8Ap8f-6NB-3vDcXBqvC-x2Z4s98jOILkTOGqy9aSmFu8m2EH1Pg/exec</code></li>
+    <li><strong>Upload project master:</strong> Scroll to <em>Project Master Upload</em> below → click <strong>Load embedded JSON here</strong> → click <strong>Upload to Sheet</strong>. This writes all 64 projects into your Google Sheet automatically.</li>
+    <li><strong>Verify on Sheet:</strong> Go back to your Google Sheet and confirm <code>ProjectMaster</code> tab is populated with project rows.</li>
+    <li><strong>PI page auto-loads:</strong> The PI assessment form (<code>index.html</code>) will now auto-fetch the project master from your Sheet on every page load.</li>
+    <li><strong>GitHub Pages:</strong> Upload <code>index.html</code> (PI page) and <code>CDRF_Admin_Dashboard.html</code> to your GitHub repo → enable GitHub Pages from repo Settings → Pages.</li>
+    <li><strong>Share URLs:</strong><br>
+      • <strong>Faculty/PI:</strong> <code>https://your-username.github.io/cdrf-assessment/</code><br>
+      • <strong>Admin/Leadership:</strong> <code>https://your-username.github.io/cdrf-assessment/CDRF_Admin_Dashboard.html</code></li>
+    <li><strong>Update project master anytime:</strong> Come back to this admin page → Upload to Sheet again.</li>
+    <li><strong>Update HTML anytime:</strong> Edit <code>index.html</code> in GitHub and commit. Changes go live in 2 minutes.</li>
+  </ol>
+</div>
+
 <body>
+<div style="background:#0d1b35;color:#fff;padding:10px 16px;text-align:center;font-weight:700;">Admin-only control panel — share only with leadership/admin team</div>
 
 <!-- ═══════════ HEADER ═══════════════════════════ -->
 <header class="app-header">
@@ -1614,9 +1619,9 @@ button[onclick*="submitForm"]:hover { background: #0d6e67 !important; }
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="_activateView('form')" id="tab-form">📋 Assessment Form</button>
-    <button class="nav-tab" onclick="switchView('report')" id="tab-report" style="display:none">📄 Report</button>
-    <button class="nav-tab" onclick="switchView('dashboard')" id="tab-dashboard" style="display:none">🏛 Dashboard <span class="cbadge" id="sub-count">0</span></button>
-    <button class="btn-admin" onclick="showAdminLogin()" id="btn-admin-login">🔐 Admin</button>
+    <button class="nav-tab" onclick="switchView('report')" id="tab-report" style="display:flex">📄 Report</button>
+    <button class="nav-tab" onclick="switchView('dashboard')" id="tab-dashboard" style="display:flex">🏛 Dashboard <span class="cbadge" id="sub-count">0</span></button>
+    <button class="btn-admin" onclick="showAdminLogin()" id="btn-admin-login">🛠 Admin Dashboard</button>
   </nav>
 </header>
 
@@ -2363,7 +2368,7 @@ button[onclick*="submitForm"]:hover { background: #0d6e67 !important; }
 <div id="adminModal" class="admin-modal-backdrop">
   <div class="admin-modal">
     <div class="modal-head">
-      <h3>🔐 Admin Login</h3>
+      <h3>🛠 Admin Dashboard Login</h3>
       <button class="modal-close" onclick="closeAdminModal()">&#x2715;</button>
     </div>
     <p class="modal-desc">Enter the admin PIN to access Programme Dashboard and Reports.</p>
@@ -2812,6 +2817,58 @@ window.addEventListener('load', function(){
     '</div>';
   content.appendChild(wrap.firstChild);
 });
+</script>
+<script>
+window.addEventListener('load', function(){
+  var host = document.querySelector('#admin-modal .admin-modal-content') || document.body;
+  if (document.getElementById('project-master-upload')) return;
+  var box = document.createElement('div');
+  box.style.cssText='max-width:1100px;margin:20px auto;background:#fff;border:1px solid #dbe6ef;border-radius:14px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.06)';
+  box.innerHTML = '<h2 style="margin:0 0 10px;color:#0d1b35">Project Master Upload</h2>'+
+  '<p style="margin:0 0 12px;color:#475569">Upload the 2-PI project master to Google Sheets through Apps Script.</p>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'+
+  '<div><label style="display:block;font-weight:600;margin-bottom:6px">Apps Script write URL</label><input id="pm-write-url" type="url" placeholder="Paste Apps Script Web App URL" value="https://script.google.com/macros/s/AKfycbxSCC4ij039KGvgSpt8Ap8f-6NB-3vDcXBqvC-x2Z4s98jOILkTOGqy9aSmFu8m2EH1Pg/exec" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></div>'+
+  '<div><label style="display:block;font-weight:600;margin-bottom:6px">Paste JSON array</label><textarea id="project-master-upload" placeholder="[{appNumber,title,pi1Name,pi1Dept,pi1Campus,pi2Name,pi2Dept,pi2Campus}]" style="width:100%;min-height:120px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea></div>'+
+  '</div>'+
+  '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="uploadProjectMasterToSheet()">Upload to Sheet</button><button class="btn btn-ghost" onclick="loadEmbeddedProjectMasterJSON()">Load embedded JSON here</button></div>'+
+  '<div id="pm-upload-status" style="margin-top:10px;color:#64748b;font-size:13px">Waiting for input.</div>';
+  document.body.insertBefore(box, document.body.firstChild.nextSibling);
+});
+function loadEmbeddedProjectMasterJSON(){
+  var ta = document.getElementById('project-master-upload');
+  if(!ta || typeof PROJECT_MASTER === 'undefined') return;
+  var rows = PROJECT_MASTER.map(function(p){
+    return {
+      appNumber:p.appNumber||'', title:p.title||'',
+      pi1Name:(p.investigators&&p.investigators[0]?p.investigators[0].name:''),
+      pi1Dept:(p.investigators&&p.investigators[0]?p.investigators[0].dept:''),
+      pi1Campus:(p.investigators&&p.investigators[0]?p.investigators[0].campus:''),
+      pi2Name:(p.investigators&&p.investigators[1]?p.investigators[1].name:''),
+      pi2Dept:(p.investigators&&p.investigators[1]?p.investigators[1].dept:''),
+      pi2Campus:(p.investigators&&p.investigators[1]?p.investigators[1].campus:'')
+    };
+  });
+  ta.value = JSON.stringify(rows, null, 2);
+  document.getElementById('pm-upload-status').textContent = 'Embedded JSON loaded into textbox.';
+}
+async function uploadProjectMasterToSheet(){
+  var url = document.getElementById('pm-write-url')?.value.trim();
+  var raw = document.getElementById('project-master-upload')?.value.trim();
+  var status = document.getElementById('pm-upload-status');
+  if(!url){ status.textContent='Paste the Apps Script Web App URL.'; return; }
+  if(!raw){ status.textContent='Paste or load the project master JSON.'; return; }
+  var rows;
+  try { rows = JSON.parse(raw); } catch(e){ status.textContent='Invalid JSON: '+e.message; return; }
+  status.textContent='Uploading to Google Sheets...';
+  try {
+    var res = await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'replaceProjectMaster', rows: rows})});
+    var data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Upload failed');
+    status.textContent='Uploaded '+(data.count || rows.length)+' project rows to Google Sheets.';
+  } catch(err){
+    status.textContent='Upload failed: '+err.message;
+  }
+}
 </script>
 </body></html>';
 
@@ -3417,5 +3474,57 @@ window.addEventListener('DOMContentLoaded',init);
 
 </script>
 
+<script>
+window.addEventListener('load', function(){
+  var host = document.querySelector('#admin-modal .admin-modal-content') || document.body;
+  if (document.getElementById('project-master-upload')) return;
+  var box = document.createElement('div');
+  box.style.cssText='max-width:1100px;margin:20px auto;background:#fff;border:1px solid #dbe6ef;border-radius:14px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.06)';
+  box.innerHTML = '<h2 style="margin:0 0 10px;color:#0d1b35">Project Master Upload</h2>'+
+  '<p style="margin:0 0 12px;color:#475569">Upload the 2-PI project master to Google Sheets through Apps Script.</p>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'+
+  '<div><label style="display:block;font-weight:600;margin-bottom:6px">Apps Script write URL</label><input id="pm-write-url" type="url" placeholder="Paste Apps Script Web App URL" value="https://script.google.com/macros/s/AKfycbxSCC4ij039KGvgSpt8Ap8f-6NB-3vDcXBqvC-x2Z4s98jOILkTOGqy9aSmFu8m2EH1Pg/exec" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></div>'+
+  '<div><label style="display:block;font-weight:600;margin-bottom:6px">Paste JSON array</label><textarea id="project-master-upload" placeholder="[{appNumber,title,pi1Name,pi1Dept,pi1Campus,pi2Name,pi2Dept,pi2Campus}]" style="width:100%;min-height:120px;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea></div>'+
+  '</div>'+
+  '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="uploadProjectMasterToSheet()">Upload to Sheet</button><button class="btn btn-ghost" onclick="loadEmbeddedProjectMasterJSON()">Load embedded JSON here</button></div>'+
+  '<div id="pm-upload-status" style="margin-top:10px;color:#64748b;font-size:13px">Waiting for input.</div>';
+  document.body.insertBefore(box, document.body.firstChild.nextSibling);
+});
+function loadEmbeddedProjectMasterJSON(){
+  var ta = document.getElementById('project-master-upload');
+  if(!ta || typeof PROJECT_MASTER === 'undefined') return;
+  var rows = PROJECT_MASTER.map(function(p){
+    return {
+      appNumber:p.appNumber||'', title:p.title||'',
+      pi1Name:(p.investigators&&p.investigators[0]?p.investigators[0].name:''),
+      pi1Dept:(p.investigators&&p.investigators[0]?p.investigators[0].dept:''),
+      pi1Campus:(p.investigators&&p.investigators[0]?p.investigators[0].campus:''),
+      pi2Name:(p.investigators&&p.investigators[1]?p.investigators[1].name:''),
+      pi2Dept:(p.investigators&&p.investigators[1]?p.investigators[1].dept:''),
+      pi2Campus:(p.investigators&&p.investigators[1]?p.investigators[1].campus:'')
+    };
+  });
+  ta.value = JSON.stringify(rows, null, 2);
+  document.getElementById('pm-upload-status').textContent = 'Embedded JSON loaded into textbox.';
+}
+async function uploadProjectMasterToSheet(){
+  var url = document.getElementById('pm-write-url')?.value.trim();
+  var raw = document.getElementById('project-master-upload')?.value.trim();
+  var status = document.getElementById('pm-upload-status');
+  if(!url){ status.textContent='Paste the Apps Script Web App URL.'; return; }
+  if(!raw){ status.textContent='Paste or load the project master JSON.'; return; }
+  var rows;
+  try { rows = JSON.parse(raw); } catch(e){ status.textContent='Invalid JSON: '+e.message; return; }
+  status.textContent='Uploading to Google Sheets...';
+  try {
+    var res = await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'replaceProjectMaster', rows: rows})});
+    var data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Upload failed');
+    status.textContent='Uploaded '+(data.count || rows.length)+' project rows to Google Sheets.';
+  } catch(err){
+    status.textContent='Upload failed: '+err.message;
+  }
+}
+</script>
 </body>
 </html>
